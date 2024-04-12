@@ -19,6 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "button_led.h"
+#include "string.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -43,6 +44,8 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+char uart_rx_buff[128] = {0};
+int uart_rx_index = 0;
 #define GPIOA_BASE_ADDR 0x40020000
 #define UART2_BASE_ADDR 0x40004400
 
@@ -71,13 +74,20 @@ void uart_init()
     *USART_CR1 &= ~(1 << 12);
     //  + parity bit: none
     *USART_CR1 &= ~(1 << 10);
+    // enable interrupt when RXNE is set
+    *USART_CR1 |= (1<<5);
+    // NVIC accept interrupt signal from UART2
+    uint32_t* ISER1 = (uint32_t*)(0xe000e104);
+    *ISER1 |= (1<<6);
     // enable TX, Rx
     *USART_CR1 |= (1 << 2) | (1 << 3);
     // enable UART
     *USART_CR1 |= (1 << 13);
+
 }
 
-void uart_send_1byte(char data){
+void uart_send_1byte(char data)
+{
     uint32_t* USART_SR=(uint32_t*)(UART2_BASE_ADDR+0x00);
 
     //check DR is emty
@@ -87,6 +97,24 @@ void uart_send_1byte(char data){
     //wait UART transfer data
     while((((*USART_SR)>>7)&1)!=1);
 
+}
+
+void USART2_IRQHandler()
+{
+	uint32_t* USART_DR = (uint32_t*)(UART2_BASE_ADDR + 0x04);
+	uart_rx_buff[uart_rx_index] = *USART_DR;
+	uart_rx_index++;
+	if(strstr(uart_rx_buff, "LED ON") != 0) {
+		led_crtl(LED_RED, 1);
+		memset(uart_rx_buff, 0, sizeof(uart_rx_buff));
+		uart_rx_index=0;
+
+	}
+	else if(strstr(uart_rx_buff, "LED OFF") != 0) {
+		led_crtl(LED_RED, 0);
+		memset(uart_rx_buff, 0, sizeof(uart_rx_buff));
+		uart_rx_index=0;
+	}
 }
 
 char uart_rev_1byte() {
@@ -142,6 +170,7 @@ int main(void)
   MX_GPIO_Init();
   uart_init();
   leds_init();
+  button_init();
   char msg[] = "hello \r\n";
   /* USER CODE BEGIN 2 */
 
@@ -157,7 +186,7 @@ int main(void)
 //	  }
 //	  HAL_Delay(2000);
 	  led_crtl(LED_BLUE, 1);
-	  HAL_Delay(100);
+	  HAL_Delay(200);
 	  led_crtl(LED_BLUE, 0);
     /* USER CODE END WHILE */
 
