@@ -157,7 +157,7 @@ int main(void)
 //	  }
 //	  HAL_Delay(2000);
 	  led_crtl(LED_BLUE, 1);
-	  HAL_Delay(2000);
+	  HAL_Delay(100);
 	  led_crtl(LED_BLUE, 0);
     /* USER CODE END WHILE */
 
