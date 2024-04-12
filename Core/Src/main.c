@@ -1,4 +1,4 @@
-/* USER CODE BEGIN Header */
+	/* USER CODE BEGIN Header */
 /**
   ******************************************************************************
   * @file           : main.c
@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "button_led.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -66,7 +67,7 @@ void uart_init()
     *USART_BRR = (104 << 4) | 3;
     // frame:
     //  + data size: 8 bite
-    uint32_t *USART_CR1 = (uint32_t *)(UART2_BASE_ADDR + 0x0c);
+    uint32_t *USART_CR1 = (uint32_t *)(UART2_BASE_ADDR + 0x0C);
     *USART_CR1 &= ~(1 << 12);
     //  + parity bit: none
     *USART_CR1 &= ~(1 << 10);
@@ -86,6 +87,16 @@ void uart_send_1byte(char data){
     //wait UART transfer data
     while((((*USART_SR)>>7)&1)!=1);
 
+}
+
+char uart_rev_1byte() {
+	uint32_t* USART_SR = (uint32_t*)(UART2_BASE_ADDR + 0x00);
+	uint32_t* USART_DR = (uint32_t*)(UART2_BASE_ADDR + 0x04);
+	//wait RXNE is set to 1 -> have data from PC
+	while(((*USART_SR >> 5) & 1) != 1);
+	//read data in DR
+	char data_recv = *USART_DR;
+	return data_recv;
 }
 /* USER CODE END PV */
 
@@ -130,6 +141,8 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   uart_init();
+  leds_init();
+  char msg[] = "hello \r\n";
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -138,8 +151,14 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  uart_send_1byte('x');
+//	  for (int i=0; i< sizeof(msg); i++)
+//	  {
+//		  uart_send_1byte(msg[i]);
+//	  }
+//	  HAL_Delay(2000);
+	  led_crtl(LED_BLUE, 1);
 	  HAL_Delay(2000);
+	  led_crtl(LED_BLUE, 0);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
