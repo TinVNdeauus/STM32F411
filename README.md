@@ -105,6 +105,22 @@ int uart_rx_index = 0;
 uint32_t* USART_DR = (uint32_t*)(UART2_BASE_ADDR + 0x04);
 uart_rx_buff[uart_rx_index] = *USART_DR;
 uart_rx_index++;
+if(strstr(uart_rx_buff, "LED ON") != 0) 
+{
+		led_crtl(LED_RED, 1);
+		memset(uart_rx_buff, 0, sizeof(uart_rx_buff));
+		uart_rx_index=0;
+
+}
+	else if(strstr(uart_rx_buff, "LED OFF") != 0) 
+ {
+		led_crtl(LED_RED, 0);
+		memset(uart_rx_buff, 0, sizeof(uart_rx_buff));
+		uart_rx_index=0;
+  }
+
+### Note:
+With folder My_driver for control LED
 
 
 
