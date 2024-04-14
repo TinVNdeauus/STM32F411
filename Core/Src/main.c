@@ -191,7 +191,9 @@ static void MX_GPIO_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+int16_t x_axis;
+int16_t y_axis;
+int16_t z_axis;
 /* USER CODE END 0 */
 
 /**
@@ -240,13 +242,17 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-	  uint8_t status = spi_read(STATUS_REG);
-	  if ((status >> 3) & 1 == 1)
-	  {
-		  spi_multi_read(OUT_X_L, (uint8_t*) raw_data, sizeof(raw_data));
-		  __asm("NOP");
-		  HAL_Delay(1000);
-	  }
+//	  uint8_t status = spi_read(STATUS_REG);
+//	  if ((status >> 3) & 1 == 1)
+//	  {
+//		  spi_multi_read(OUT_X_L, (uint8_t*) raw_data, sizeof(raw_data));
+//		  __asm("NOP");
+//		  HAL_Delay(1000);
+//	  }
+	  x_axis = spi_read(0x28) | (spi_read(0x29) << 8);
+	  y_axis = spi_read(0x2A) | (spi_read(0x2B) << 8);
+	  z_axis = spi_read(0x2C) | (spi_read(0x2D) << 8);
+	  HAL_Delay(100);
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
